@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+exports/
+test-output/
+*.gpx
+!tests/fixtures/*.gpx

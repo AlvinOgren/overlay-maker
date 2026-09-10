@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="api-token" content="__API_TOKEN__">
+  <title>Ride Overlay · GPX till transparent video</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#workspace">Hoppa till arbetsytan</a>
+  <header class="app-header">
+    <a class="brand" href="/" aria-label="Ride Overlay startsida"><span class="brand-symbol">R<span>↗</span></span><span>RIDE<span class="brand-light">OVERLAY</span></span></a>
+    <div class="header-right"><span class="local-tag">LOKALT PÅ DIN DATOR</span><button id="help-button" class="quiet-button">Så fungerar det <span aria-hidden="true">↗</span></button></div>
+  </header>
+  <main id="workspace">
+    <div class="intro"><div><p class="eyebrow">FRÅN AKTIVITET TILL VIDEO</p><h1>Dina siffror. Din film.</h1><p>Välj mätvärden och exportera ett överlägg med transparent bakgrund.</p></div><span class="version-label">GPX → OVERLAY <span>01</span></span></div>
+    <div id="error" class="message error" role="alert" hidden></div>
+    <div id="startup-status" class="message" role="status">Startar appen… Om meddelandet blir kvar: stäng appens terminal, starta START.bat och använd sidan som öppnas automatiskt. Öppna inte index.html direkt.</div>
+    <div class="editor">
+      <aside class="control-panel">
+        <section class="upload-section">
+          <div class="section-heading"><h2><span>01</span> Aktivitet</h2><span class="subtle">.gpx</span></div>
+          <label id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Välj GPX-fil">
+            <input id="file" type="file" accept=".gpx,application/gpx+xml" class="sr-only" disabled>
+            <span class="upload-icon" data-icon="upload"></span><strong id="file-title">Släpp din GPX-fil här</strong><span id="file-description">eller klicka för att välja · max 20 MB</span>
+          </label>
+          <div id="upload-status" class="upload-status" role="status" aria-live="polite" aria-atomic="true" hidden><strong id="upload-status-title"></strong><span id="upload-status-detail"></span></div>
+          <div id="activity-summary" class="activity-summary" hidden></div>
+          <details id="data-notes" class="data-notes" hidden><summary>Om mätvärdena</summary><div id="warnings"></div></details>
+        </section>
+        <fieldset id="controls" disabled>
+          <section>
+            <div class="section-heading"><h2><span>02</span> Mätvärden</h2><span id="selected-count" class="subtle">Välj i filen</span></div>
+            <div id="metrics" class="metric-list"></div>
+            <p class="field-hint">Endast värden som finns eller kan beräknas går att välja.</p>
+          </section>
+          <section>
+            <div class="section-heading"><h2><span>03</span> Utseende</h2></div>
+            <div class="field-pair"><label>Layout<select id="layout"><option value="row">På rad</option><option value="stack">Staplat</option></select></label><label>Textstorlek<select id="size"><option value="small">Liten</option><option value="medium" selected>Medium</option><option value="large">Stor</option></select></label></div>
+            <div class="field-pair"><label>Placering<select id="anchor"><option value="bottom-left">Nere till vänster</option><option value="bottom-right">Nere till höger</option><option value="top-left">Uppe till vänster</option><option value="top-right">Uppe till höger</option><option value="center">Centrerat</option></select></label><label>Symbolfärg<div class="color-field"><input id="accent" type="color" value="#c3f85c" aria-label="Symbolfärg"><span id="accent-label">#C3F85C</span></div></label></div>
+            <label class="check-line"><input id="icons" type="checkbox" checked> Små symboler</label>
+            <label class="check-line"><input id="outline" type="checkbox" checked> Mörk kontur runt texten</label>
+          </section>
+        </fieldset>
+      </aside>
+      <div class="main-panel">
+        <section class="preview-panel">
+          <div class="preview-toolbar"><div><span class="preview-label">FÖRHANDSVISNING</span><span id="canvas-label" class="canvas-label">3840 × 2160</span></div><div class="background-controls" role="group" aria-label="Bakgrund i förhandsvisningen"><button class="swatch checker-swatch active" data-background="checker" aria-label="Schackrutor" aria-pressed="true"></button><button class="swatch dark-swatch" data-background="dark" aria-label="Mörk bakgrund" aria-pressed="false"></button><button class="swatch light-swatch" data-background="light" aria-label="Ljus bakgrund" aria-pressed="false"></button></div></div>
+          <div id="preview-stage" class="preview-stage checker">
+            <div id="preview-empty"><span data-icon="layers"></span><h2>Plats för din nästa tur</h2><p>Ladda upp en aktivitet för att börja.</p><div class="empty-metrics"><span>— <small>km/h</small></span><span>— <small>W</small></span><span>— <small>bpm</small></span></div></div>
+            <img id="preview-image" alt="Förhandsvisning av dina valda mätvärden" hidden>
+            <span id="preview-loading" class="preview-loading" hidden>Uppdaterar…</span>
+          </div>
+          <div class="preview-caption"><span data-icon="layers"></span>Bakgrunden är bara för förhandsvisning. Videon är genomskinlig.</div>
+          <div class="timeline">
+            <button id="play" class="play-button" disabled aria-label="Spela förhandsvisning"><span data-icon="play"></span></button>
+            <div class="timeline-main"><div class="time-labels"><span>ELAPSED <strong id="current-time">00:00:00</strong></span><span id="total-time">00:00:00</span></div><input id="scrubber" aria-label="Position i aktiviteten" type="range" min="0" max="1" value="0" step="0.5" disabled></div>
+          </div>
+        </section>
+        <section class="export-panel">
+          <div class="section-heading"><h2><span>04</span> Export</h2><span class="alpha-badge">ÄKTA TRANSPARENS</span></div>
+          <fieldset id="export-controls" disabled>
+            <div class="export-fields"><label>Videoyta<select id="canvas"><option value="4k">4K · 3840 × 2160</option><option value="strip">Kompakt · 3840 × 540</option><option value="hd">Full HD · 1920 × 1080</option></select></label><label>Bildfrekvens<select id="fps"><option value="1">1 fps</option><option value="2" selected>2 fps</option><option value="3">3 fps</option><option value="5">5 fps</option></select></label><label>Format<select id="format"><option value="prores">MOV · ProRes 4444</option><option value="webm">WebM · VP9 alpha</option></select></label></div>
+            <div class="range-heading"><span>Utsnitt ur aktiviteten</span><button id="full-range" type="button" class="text-button">Hela aktiviteten</button></div>
+            <div class="trim-row"><label>Start · hh:mm:ss<input id="start" value="00:00:00" inputmode="decimal" autocomplete="off"></label><span aria-hidden="true">→</span><label>Slut · hh:mm:ss<input id="end" value="00:00:00" inputmode="decimal" autocomplete="off"></label><div class="duration-result"><span>EXPORTLÄNGD</span><strong id="clip-duration">—</strong></div></div>
+          </fieldset>
+          <p id="export-note" class="field-hint">2 fps räcker för lugnt uppdaterade siffror. Välj ett kort utsnitt för den första exporten.</p>
+          <div class="export-footer"><span id="frame-summary">Ladda upp en GPX-fil för att fortsätta.</span><button id="export-button" class="primary-button" disabled><span data-icon="download"></span> Skapa overlay</button></div>
+          <div id="job" class="job" aria-live="polite" hidden><div class="job-heading"><strong id="job-title">Skapar video…</strong><button id="cancel" class="text-button">Avbryt</button></div><progress id="job-progress" max="100" value="0"></progress><div class="job-details"><span id="job-detail"></span><a id="download" class="primary-button" hidden>Ladda ner video <span data-icon="download"></span></a></div></div>
+        </section>
+        <p class="bottom-note"><span data-icon="clock"></span>Elapsed time räknas från aktivitetens start. Lägg videon ovanpå din film och synka i redigeringen.</p>
+      </div>
+    </div>
+  </main>
+  <dialog id="help"><button id="close-help" class="dialog-close" aria-label="Stäng">×</button><p class="eyebrow">SNABBSTART</p><h2>Från GPX till färdig overlay</h2><ol><li>Ladda upp din GPX-fil och välj de mätvärden du vill visa.</li><li>Anpassa storlek och layout. Schackrutorna visar den transparenta ytan.</li><li>Välj ett utsnitt och skapa videon. Prova först 10 sekunder.</li><li>Lägg överlägget på ett videospår ovanför kamerafilmen. Skala, placera och synka med elapsed time.</li></ol><p>ProRes 4444 är ett redigeringsformat och kan ge stora filer. WebM är ofta mindre, men stödet för transparens varierar mellan redigeringsprogram. En spelare kan visa svart bakgrund trots att videon har transparens.</p><p>GPS-hastighet är beräknad. Luckor över 10 sekunder och segmentgränser fylls inte med påhittade sensorvärden. Noll watt och noll kadens är däremot giltiga mätningar.</p><p>Filerna behandlas lokalt. Exporter sparas i projektets mapp <code>exports</code>. Ingen kameravideo behöver laddas upp.</p></dialog>
+</body>
+</html>
