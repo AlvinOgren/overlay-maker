@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
   <meta name="api-token" content="__API_TOKEN__">
-  <title>Ride Overlay · GPX till transparent video</title>
+  <title>Ride Overlay · GPX till kompakt video</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/style.css">
   <script src="/app.js" defer></script>
@@ -17,7 +17,7 @@
     <div class="header-right"><span class="local-tag">LOKALT PÅ DIN DATOR</span><button id="help-button" class="quiet-button">Så fungerar det <span aria-hidden="true">↗</span></button></div>
   </header>
   <main id="workspace">
-    <div class="intro"><div><p class="eyebrow">FRÅN AKTIVITET TILL VIDEO</p><h1>Dina siffror. Din film.</h1><p>Välj mätvärden och exportera ett överlägg med transparent bakgrund.</p></div><span class="version-label">GPX → OVERLAY <span>01</span></span></div>
+    <div class="intro"><div><p class="eyebrow">FRÅN AKTIVITET TILL VIDEO</p><h1>Dina siffror. Din film.</h1><p>Välj mätvärden och skapa en kompakt video att placera över din film.</p></div><span class="version-label">GPX → OVERLAY <span>01</span></span></div>
     <div id="error" class="message error" role="alert" hidden></div>
     <div id="startup-status" class="message" role="status">Startar appen… Om meddelandet blir kvar: stäng appens terminal, starta START.bat och använd sidan som öppnas automatiskt. Öppna inte index.html direkt.</div>
     <div class="editor">
@@ -40,8 +40,8 @@
           </section>
           <section>
             <div class="section-heading"><h2><span>03</span> Utseende</h2></div>
-            <div class="field-pair"><label>Layout<select id="layout"><option value="row">På rad</option><option value="stack">Staplat</option></select></label><label>Textstorlek<select id="size"><option value="small">Liten</option><option value="medium" selected>Medium</option><option value="large">Stor</option></select></label></div>
-            <div class="field-pair"><label>Placering<select id="anchor"><option value="bottom-left">Nere till vänster</option><option value="bottom-right">Nere till höger</option><option value="top-left">Uppe till vänster</option><option value="top-right">Uppe till höger</option><option value="center">Centrerat</option></select></label><label>Symbolfärg<div class="color-field"><input id="accent" type="color" value="#c3f85c" aria-label="Symbolfärg"><span id="accent-label">#C3F85C</span></div></label></div>
+            <div class="field-pair"><label>Layout<select id="layout"><option value="row">Horisontell</option><option value="stack">Vertikal</option></select></label><label>Textstorlek<select id="size"><option value="small">Liten</option><option value="medium" selected>Medium</option><option value="large">Stor</option></select></label></div>
+            <div class="field-pair"><label>Symbolfärg<div class="color-field"><input id="accent" type="color" value="#c3f85c" aria-label="Symbolfärg"><span id="accent-label">#C3F85C</span></div></label></div>
             <label class="check-line"><input id="icons" type="checkbox" checked> Små symboler</label>
             <label class="check-line"><input id="outline" type="checkbox" checked> Mörk kontur runt texten</label>
           </section>
@@ -49,22 +49,22 @@
       </aside>
       <div class="main-panel">
         <section class="preview-panel">
-          <div class="preview-toolbar"><div><span class="preview-label">FÖRHANDSVISNING</span><span id="canvas-label" class="canvas-label">3840 × 2160</span></div><div class="background-controls" role="group" aria-label="Bakgrund i förhandsvisningen"><button class="swatch checker-swatch active" data-background="checker" aria-label="Schackrutor" aria-pressed="true"></button><button class="swatch dark-swatch" data-background="dark" aria-label="Mörk bakgrund" aria-pressed="false"></button><button class="swatch light-swatch" data-background="light" aria-label="Ljus bakgrund" aria-pressed="false"></button></div></div>
-          <div id="preview-stage" class="preview-stage checker">
+          <div class="preview-toolbar"><div><span class="preview-label">FÖRHANDSVISNING</span><span id="canvas-label" class="canvas-label">Beskärs automatiskt</span></div><div id="background-controls" class="background-controls" hidden role="group" aria-label="Bakgrund i förhandsvisningen"><button class="swatch checker-swatch active" data-background="checker" aria-label="Schackrutor" aria-pressed="true"></button><button class="swatch dark-swatch" data-background="dark" aria-label="Mörk bakgrund" aria-pressed="false"></button><button class="swatch light-swatch" data-background="light" aria-label="Ljus bakgrund" aria-pressed="false"></button></div></div>
+          <div id="preview-stage" class="preview-stage dark">
             <div id="preview-empty"><span data-icon="layers"></span><h2>Plats för din nästa tur</h2><p>Ladda upp en aktivitet för att börja.</p><div class="empty-metrics"><span>— <small>km/h</small></span><span>— <small>W</small></span><span>— <small>bpm</small></span></div></div>
             <img id="preview-image" alt="Förhandsvisning av dina valda mätvärden" hidden>
             <span id="preview-loading" class="preview-loading" hidden>Uppdaterar…</span>
           </div>
-          <div class="preview-caption"><span data-icon="layers"></span>Bakgrunden är bara för förhandsvisning. Videon är genomskinlig.</div>
+          <div class="preview-caption"><span data-icon="layers"></span><span id="preview-caption-text">MP4 har svart bakgrund. Videoytan anpassas runt dina mätvärden.</span></div>
           <div class="timeline">
             <button id="play" class="play-button" disabled aria-label="Spela förhandsvisning"><span data-icon="play"></span></button>
             <div class="timeline-main"><div class="time-labels"><span>ELAPSED <strong id="current-time">00:00:00</strong></span><span id="total-time">00:00:00</span></div><input id="scrubber" aria-label="Position i aktiviteten" type="range" min="0" max="1" value="0" step="0.5" disabled></div>
           </div>
         </section>
         <section class="export-panel">
-          <div class="section-heading"><h2><span>04</span> Export</h2><span class="alpha-badge">ÄKTA TRANSPARENS</span></div>
+          <div class="section-heading"><h2><span>04</span> Export</h2><span class="alpha-badge">AUTOMATISK BESKÄRNING</span></div>
           <fieldset id="export-controls" disabled>
-            <div class="export-fields"><label>Videoyta<select id="canvas"><option value="4k">4K · 3840 × 2160</option><option value="strip">Kompakt · 3840 × 540</option><option value="hd">Full HD · 1920 × 1080</option></select></label><label>Bildfrekvens<select id="fps"><option value="1">1 fps</option><option value="2" selected>2 fps</option><option value="3">3 fps</option><option value="5">5 fps</option></select></label><label>Format<select id="format"><option value="prores">MOV · ProRes 4444</option><option value="webm">WebM · VP9 alpha</option></select></label></div>
+            <div class="export-fields"><label>Bildfrekvens<select id="fps"><option value="1">1 fps</option><option value="2" selected>2 fps</option><option value="3">3 fps</option><option value="5">5 fps</option></select></label><label>Format<select id="format"><option value="mp4" selected>MP4 · Svart bakgrund</option><option value="prores">MOV · ProRes 4444</option><option value="webm">WebM · VP9 alpha</option></select></label></div>
             <div class="range-heading"><span>Utsnitt ur aktiviteten</span><button id="full-range" type="button" class="text-button">Hela aktiviteten</button></div>
             <div class="trim-row"><label>Start · hh:mm:ss<input id="start" value="00:00:00" inputmode="decimal" autocomplete="off"></label><span aria-hidden="true">→</span><label>Slut · hh:mm:ss<input id="end" value="00:00:00" inputmode="decimal" autocomplete="off"></label><div class="duration-result"><span>EXPORTLÄNGD</span><strong id="clip-duration">—</strong></div></div>
           </fieldset>
@@ -76,6 +76,6 @@
       </div>
     </div>
   </main>
-  <dialog id="help"><button id="close-help" class="dialog-close" aria-label="Stäng">×</button><p class="eyebrow">SNABBSTART</p><h2>Från GPX till färdig overlay</h2><ol><li>Ladda upp din GPX-fil och välj de mätvärden du vill visa.</li><li>Anpassa storlek och layout. Schackrutorna visar den transparenta ytan.</li><li>Välj ett utsnitt och skapa videon. Prova först 10 sekunder.</li><li>Lägg överlägget på ett videospår ovanför kamerafilmen. Skala, placera och synka med elapsed time.</li></ol><p>ProRes 4444 är ett redigeringsformat och kan ge stora filer. WebM är ofta mindre, men stödet för transparens varierar mellan redigeringsprogram. En spelare kan visa svart bakgrund trots att videon har transparens.</p><p>GPS-hastighet är beräknad. Luckor över 10 sekunder och segmentgränser fylls inte med påhittade sensorvärden. Noll watt och noll kadens är däremot giltiga mätningar.</p><p>Filerna behandlas lokalt. Exporter sparas i projektets mapp <code>exports</code>. Ingen kameravideo behöver laddas upp.</p></dialog>
+  <dialog id="help"><button id="close-help" class="dialog-close" aria-label="Stäng">×</button><p class="eyebrow">SNABBSTART</p><h2>Från GPX till färdig overlay</h2><ol><li>Ladda upp din GPX-fil och välj de mätvärden du vill visa.</li><li>Välj textstorlek och horisontell eller vertikal layout. Videoytan anpassas automatiskt runt mätvärdena.</li><li>Välj ett utsnitt och skapa videon. Prova först 10 sekunder.</li><li>Lägg överlägget på ett videospår ovanför kamerafilmen. Skala, placera och synka med elapsed time.</li></ol><p>MP4 är standard och har svart bakgrund. Placering och skalning gör du i redigeringsprogrammet. MOV och WebM finns kvar som alternativ med transparens. ProRes 4444 kan ge stora filer. WebM är ofta mindre, men stödet för transparens varierar mellan redigeringsprogram. En spelare kan visa svart bakgrund trots att videon har transparens.</p><p>GPS-hastighet är beräknad. Luckor över 10 sekunder och segmentgränser fylls inte med påhittade sensorvärden. Noll watt och noll kadens är däremot giltiga mätningar.</p><p>Filerna behandlas lokalt. Exporter sparas i projektets mapp <code>exports</code>. Ingen kameravideo behöver laddas upp.</p></dialog>
 </body>
 </html>

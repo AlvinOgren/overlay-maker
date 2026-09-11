@@ -8,7 +8,7 @@ import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, unquote
 from gpx import MAX_BYTES, parse_gpx, public_activity
-from rendering import ROOT, validate, render
+from rendering import ROOT, validate, OverlayRenderer
 from jobs import Job, formats
 
 TOKEN=secrets.token_urlsafe(32)
@@ -42,7 +42,7 @@ class Handler(BaseHTTPRequestHandler):
         if path.startswith('/download/'):
             job=jobs.get(path.rsplit('/',1)[-1])
             if not job or job.state!='done': return self.send(404,{'error':'Videon är inte klar.'})
-            self.send_response(200); self.send_header('Content-Type','video/quicktime' if job.path.suffix=='.mov' else 'video/webm'); self.send_header('Content-Length',str(job.path.stat().st_size)); self.send_header('Content-Disposition','attachment; filename="'+job.path.name+'"'); self.end_headers()
+            self.send_response(200); self.send_header('Content-Type',{'.mp4':'video/mp4','.mov':'video/quicktime','.webm':'video/webm'}[job.path.suffix]); self.send_header('Content-Length',str(job.path.stat().st_size)); self.send_header('Content-Disposition','attachment; filename="'+job.path.name+'"'); self.end_headers()
             try:
                 with job.path.open('rb') as f:
                     while chunk:=f.read(1024*1024): self.wfile.write(chunk)
@@ -77,7 +77,9 @@ class Handler(BaseHTTPRequestHandler):
             if path=='/api/preview':
                 elapsed=float(body.get('elapsed',0))
                 if not 0<=elapsed<=activity['duration']: raise ValueError('Ogiltig tid.')
-                buffer=io.BytesIO(); render(activity,cfg,elapsed,True).save(buffer,format='PNG'); return self.send(200,buffer.getvalue(),'image/png')
+                renderer=OverlayRenderer(activity,cfg)
+                buffer=io.BytesIO(); renderer.frame(elapsed,True).save(buffer,format='PNG')
+                return self.send(200,buffer.getvalue(),'image/png',{'X-Overlay-Width':str(renderer.size[0]),'X-Overlay-Height':str(renderer.size[1])})
             if path=='/api/export':
                 if cfg['format'] not in available: raise ValueError('Videokodaren finns inte. Kör START.bat för att installera beroenden.')
                 with lock:

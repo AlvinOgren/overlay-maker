@@ -1,17 +1,16 @@
-# Verifiering av första versionen
+# Verifiering av kompakt export
 
-## Uppdatering av uppladdning
+- Elva Python-tester passerar. Befintliga tester för GPX, uppladdning, Windows-filtyp, luckor och saknade värden passerar fortfarande.
+- Nya tester kontrollerar MP4 som standard, fast och jämn pixelstorlek vid olika tidsstämplar, svart MP4-bakgrund och att text/symboler får plats i både horisontell och vertikal layout för alla tre textstorlekar.
+- Verkliga exportfiler skapades med Björsäter_z2.gpx, fem standardmätvärden, medium text, elapsed 15–18 sekunder och 2 fps. FFprobe verifierade mått, bildfrekvens och tre sekunders längd. MP4 avkodades till RGB och har svart hörnpixel samt synliga siffror. WebM avkodades med libvpx-vp9 och behåller alfakanalen.
 
-Nio Python-tester passerar. De fyra tillkommande testar HTTP-hanterarna direkt i minnet: korrekt JavaScript-filtyp även när systemet rapporterar text/plain, uppladdning med svenskt filnamn följt av en verklig PNG-förhandsvisning, felaktig fil följt av lyckat nytt försök samt uppladdning av båda användarens GPX-filer. JavaScript klarar syntaxkontrollen. Ingen ny webbläsar- eller Windows-körning gjordes; detta verifierar serverflödet och skyddet mot felaktig MIME-typ, inte den exakta orsaken på användarens dator.
+| Format/layout | Mått | Exporttid i testmiljön | Filstorlek |
+| --- | --- | --- | --- |
+| MP4 horisontell | 1364 × 184 | 0,104 s | 40 852 byte |
+| MP4 vertikal | 466 × 956 | 0,123 s | 41 909 byte |
+| MOV horisontell | 1364 × 184 | 0,149 s | 854 732 byte |
+| WebM horisontell | 1364 × 184 | 0,545 s | 114 976 byte |
 
-Utförd i Linux-miljön där projektet byggdes.
+Tiderna mäter exportjobbet i Linuxmiljön efter GPX-inläsning och är korta stickprov, inte en garanti för andra datorer eller långa klipp. Horisontell standardlayout behandlar cirka 97 procent färre pixlar än en hel 3840 × 2160-bild, med samma numeriska textstorlek på 88 px.
 
-- Python-källfiler kompilerar och JavaScript klarar `node --check`.
-- Fem automatiska tester passerar: nollvärden/interpolering, tidsluckor/segment, saknade sensorer, felaktig indata/inställningar och transparent rendering i samtliga ytor med både rad och stapel.
-- Björsäter_z2.gpx: 9 561 punkter, 9 786 sekunder; puls och kadens i samtliga punkter, effekt i 9 560.
-- KvällsMTB.gpx: 6 451 punkter, 6 929 sekunder; effekt och kadens markeras otillgängliga.
-- Riktiga MOV- och WebM-filer skapades från Björsäter_z2, elapsed 15–18 sekunder. FFprobe bekräftar 3840 × 2160, 2 fps och 3 sekunders längd för båda.
-- Båda filerna avkodades till RGBA. Alfakanalen innehåller 0 och 255, hörnpixeln är helt transparent och 48 354 pixlar har synlig text/symboler i första bildrutan. WebM avkodades med libvpx-vp9, eftersom standardavkodaren kan utelämna alpha.
-- Den renderade förhandsvisningsbilden granskades för läsbarhet och avklippning av de fem förvalda mätvärdena.
-
-Windows-startfilen har inte körts på en faktisk Windows-dator här. Gränssnittet har inte funktionstestats i en webbläsare. WebMCP-registrering och verktygsanrop har inte verifierats i en stödd webbläsarkontext. Import i en extern videoeditor är inte testad; formatstöd beror på vald editor. Dessa punkter är inte täckta av export-/enhetstesterna.
+JavaScript klarar syntaxkontrollen. Den renderade horisontella bilden har granskats. Ingen webbläsar-, Windows- eller extern videoeditortestning gjordes här. WebMCP har inte verifierats i en stödd webbläsarkontext.

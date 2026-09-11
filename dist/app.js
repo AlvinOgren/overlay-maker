@@ -25,7 +25,7 @@ function seconds(text){if(!/^\d+:\d{2}:\d{2}(?:\.\d+)?$/.test(text.trim()))throw
 function config(){
   if(!state.activity)throw Error('Välj en GPX-fil först.');
   const cfg={activity:state.activity.id,metrics:[...state.metrics],elapsed:state.elapsed};
-  for(const id of ['canvas','layout','size','anchor','format','accent'])cfg[id]=$(id).value;
+  for(const id of ['layout','size','format','accent'])cfg[id]=$(id).value;
   for(const id of ['icons','outline'])cfg[id]=$(id).checked;
   cfg.fps=Number($('fps').value);cfg.start=seconds($('start').value);cfg.end=seconds($('end').value);
   if(!cfg.metrics.length)throw Error('Välj minst ett mätvärde.');
@@ -35,8 +35,10 @@ function config(){
 function updateSummary(){
   $('selected-count').textContent=state.metrics.length+' valda';
   $('accent-label').textContent=$('accent').value.toUpperCase();
-  const dims={'4k':[3840,2160],strip:[3840,540],hd:[1920,1080]}[$('canvas').value];
-  $('canvas-label').textContent=dims.join(' × ');$('preview-stage').style.aspectRatio=dims[0]+'/'+dims[1];
+  const opaque=$('format').value==='mp4';
+  $('background-controls').hidden=opaque;
+  $('preview-caption-text').textContent=opaque?'MP4 har svart bakgrund. Videoytan anpassas runt dina mätvärden.':'Videon har transparens. Förhandsvisningens bakgrund följer inte med.';
+  $('preview-stage').className='preview-stage '+(opaque?'dark':document.querySelector('[data-background].active').dataset.background);
   try{const c=config(),n=Math.ceil((c.end-c.start)*c.fps);$('clip-duration').textContent=clock(n/c.fps);$('frame-summary').textContent=n.toLocaleString('sv-SE')+' bildrutor · '+c.fps+' fps';$('export-button').disabled=state.busy||!state.formats.includes(c.format);}
   catch(e){$('clip-duration').textContent='—';$('frame-summary').textContent=state.activity?e.message:'Ladda upp en GPX-fil för att fortsätta.';$('export-button').disabled=true;}
 }
@@ -55,13 +57,14 @@ function metricsUI(){
   }
 }
 let previewURL=null, previewTimer=null, uploadSerial=0;
-function requestPreview(){state.previewPending=true;clearTimeout(previewTimer);previewTimer=setTimeout(preview,110);}
+function requestPreview(){$('canvas-label').textContent='Beräknar videoyta…';state.previewPending=true;clearTimeout(previewTimer);previewTimer=setTimeout(preview,110);}
 async function preview(){
   if(state.previewRunning||!state.previewPending||!state.activity)return;
   let cfg;try{cfg=config();}catch{return;}
   state.previewPending=false;state.previewRunning=true;$('preview-loading').hidden=false;
   const serial=uploadSerial;
   try{const response=await api('/api/preview',cfg),blob=await response.blob();if(serial!==uploadSerial)return;
+    $('canvas-label').textContent=response.headers.get('X-Overlay-Width')+' × '+response.headers.get('X-Overlay-Height')+' px · beskuren';
     const url=URL.createObjectURL(blob);$('preview-image').src=url;$('preview-image').hidden=false;$('preview-empty').hidden=true;
     if(previewURL)URL.revokeObjectURL(previewURL);previewURL=url;
   }catch(e){if(serial===uploadSerial)fail(e);}finally{state.previewRunning=false;$('preview-loading').hidden=true;if(state.previewPending)requestPreview();}
@@ -105,7 +108,7 @@ $('file').addEventListener('change',()=>upload($('file').files[0]));
 $('dropzone').addEventListener('keydown',e=>{if(['Enter',' '].includes(e.key)){e.preventDefault();$('file').click();}});
 for(const event of ['dragenter','dragover'])$('dropzone').addEventListener(event,e=>{e.preventDefault();$('dropzone').classList.add('drag');});
 for(const event of ['dragleave','drop'])$('dropzone').addEventListener(event,e=>{e.preventDefault();$('dropzone').classList.remove('drag');if(event==='drop')upload(e.dataTransfer.files[0]);});
-for(const id of ['canvas','layout','size','anchor','format','accent','fps','icons','outline','start','end'])$(id).addEventListener('input',()=>{updateSummary();requestPreview();});
+for(const id of ['layout','size','format','accent','fps','icons','outline','start','end'])$(id).addEventListener('input',()=>{updateSummary();requestPreview();});
 $('scrubber').addEventListener('input',()=>seek(Number($('scrubber').value)));
 $('full-range').addEventListener('click',()=>{if(!state.activity)return;$('start').value='00:00:00';$('end').value=clock(state.activity.duration);updateSummary();requestPreview();});
 $('play').addEventListener('click',()=>{if(state.playing){stop();return;}if(state.elapsed>=state.activity.duration)seek(0);state.playing=true;$('play').innerHTML=svg('pause');$('play').setAttribute('aria-label','Pausa förhandsvisning');});
@@ -147,7 +150,7 @@ if(modelContext?.registerTool){
       if(!state.activity||!Array.isArray(input.metrics)||!input.metrics.length||input.metrics.some(k=>!state.activity.metrics[k]?.available))throw Error('Select available metrics from an uploaded activity.');
       state.metrics=[...new Set(input.metrics)];metricsUI();updateSummary();requestPreview();return {selected:state.metrics,preview:'updating'};
     }},
-    {name:'start_overlay_export',description:'Start rendering the current selection to a local transparent video file. Returns a job ID; rendering continues in the visible export panel.',annotations:{readOnlyHint:false,untrustedContentHint:false},inputSchema:{type:'object',properties:{},additionalProperties:false},execute:async()=>startExport()}
+    {name:'start_overlay_export',description:'Start rendering the current selection to a local cropped video file. Returns a job ID; rendering continues in the visible export panel.',annotations:{readOnlyHint:false,untrustedContentHint:false},inputSchema:{type:'object',properties:{},additionalProperties:false},execute:async()=>startExport()}
   ];
   for(const definition of definitions){try{Promise.resolve(modelContext.registerTool(definition,{signal:lifecycle.signal})).catch(()=>{});}catch{}}
 }

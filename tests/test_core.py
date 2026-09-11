@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from gpx import parse_gpx,sample
-from rendering import validate,render
+from rendering import validate,render,OverlayRenderer
 
 def fixture():
     return b'''<gpx xmlns="http://www.topografix.com/GPX/1/1"><trk><trkseg>
@@ -33,10 +33,30 @@ class CoreTests(unittest.TestCase):
             with self.assertRaises(ValueError): validate(self.a,cfg)
     def test_alpha_all_layouts(self):
         for layout in ['row','stack']:
-            for canvas in ['4k','strip','hd']:
-                cfg=validate(self.a,{'metrics':['power','cad','elapsed'],'layout':layout,'canvas':canvas})
+            for fmt in ['prores','webm']:
+                cfg=validate(self.a,{'metrics':['power','cad','elapsed'],'layout':layout,'format':fmt})
                 img=render(self.a,cfg,.5,True)
                 self.assertEqual(img.getpixel((0,0))[3],0)
                 self.assertEqual(img.getchannel('A').getextrema(),(0,255))
+    def test_compact_dimensions_and_default_mp4(self):
+        for layout in ['row','stack']:
+            cfg=validate(self.a,{'metrics':['power','cad','elapsed'],'layout':layout})
+            self.assertEqual(cfg['format'],'mp4')
+            renderer=OverlayRenderer(self.a,cfg)
+            self.assertLess(renderer.size[0]*renderer.size[1],3840*2160//4)
+            self.assertTrue(all(n%2==0 for n in renderer.size))
+            for t in [0,.5,1,10,20,21]:
+                frame=renderer.frame(t)
+                self.assertEqual(frame.size,renderer.size)
+                self.assertEqual(frame.getpixel((0,0)),(0,0,0,255))
+    def test_labels_and_values_fit_inside_margins(self):
+        for layout in ['row','stack']:
+            for size in ['small','medium','large']:
+                cfg=validate(self.a,{'metrics':['speed','power','cad','elapsed','distance'],'layout':layout,'size':size,'format':'prores'})
+                renderer=OverlayRenderer(self.a,cfg)
+                for t in [0,1,20,21]:
+                    box=renderer.frame(t).getchannel('A').getbbox()
+                    self.assertGreater(box[0],0); self.assertGreater(box[1],0)
+                    self.assertLess(box[2],renderer.size[0]); self.assertLess(box[3],renderer.size[1])
 
 if __name__=='__main__': unittest.main()

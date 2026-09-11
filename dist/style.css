@@ -10,3 +10,6 @@
 .upload-status.loading strong:before{content:'';display:inline-block;width:12px;height:12px;border:2px solid #68794b;border-top-color:var(--accent);border-radius:50%;margin-right:10px;animation:upload-spin 1s linear infinite}
 @keyframes upload-spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.upload-status.loading strong:before{animation:none}}
+
+.export-fields{grid-template-columns:1fr 1fr}.export-fields>label:last-child{grid-column:auto}
+.preview-stage img{padding:20px}.alpha-badge{font-size:12px}.field-pair>label{font-size:14px}

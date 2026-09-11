@@ -149,7 +149,7 @@ def parse_gpx(data: bytes, filename="aktivitet.gpx"):
 
 
 def public_activity(activity):
-    return {k: v for k, v in activity.items() if k not in {"points", "times"}}
+    return {k: v for k, v in activity.items() if k not in {"points", "times"} and not k.startswith('_')}
 
 
 def sample(activity, elapsed):
